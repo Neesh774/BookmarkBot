@@ -10,19 +10,27 @@ public class Commands extends ListenerAdapter{
 		String message = event.getMessage().getContentRaw();
 		User author = event.getAuthor();
 		MessageChannel channel = event.getChannel();
-		if(!message.startsWith("bb") || event.getAuthor().isBot()) {
+		if(!message.startsWith("b") || event.getAuthor().isBot()) {
 			return;
 		}
-		message = message.substring(2);
+		message = message.substring(1);
 		String[] args = message.split(" ");
 		if(args[0].equalsIgnoreCase("help")) {
 			Embeds.sendInfoEmbed(event.getChannel(), event.getAuthor());
 		}
 		else if(args[0].equalsIgnoreCase("bookmark")) {
-			Bookmark nbm = new Bookmark(author, args[1], args[2]);
 			try {
+				Bookmark nbm = new Bookmark(author, args[1], args[2]);
 				if(BookmarkUtil.hasUser(author) && BookmarkUtil.getBookmarkList(author).size() == 10) {
 					Embeds.sendLimitEmbed(channel, author);
+					return;
+				}
+				else if(BookmarkUtil.hasUser(author) && BookmarkUtil.checkIfDupe(author, nbm)) {
+					Embeds.sendDupeEmbed(channel, author, message);
+					return;
+				}
+				else if(!BookmarkUtil.checkIfURL(author, nbm)) {
+					Embeds.sendURLEmbed(channel, author);
 					return;
 				}
 				BookmarkUtil.setBookmark(author, nbm, channel);
@@ -37,9 +45,12 @@ public class Commands extends ListenerAdapter{
 		}
 		else if(args[0].equalsIgnoreCase("del")) {
 			try {
-				BookmarkUtil.removeBookmark(author, Integer.parseInt(args[1]));
+				Bookmark bm = BookmarkUtil.getBookmarkList(author).get(Integer.parseInt(args[1])-1);
+				BookmarkUtil.removeBookmark(author, Integer.parseInt(args[1])-1);
+				Embeds.sendSuccessDeleteEmbed(channel, author, bm);
 			}
 			catch(Exception e){
+				e.printStackTrace();
 				Embeds.sendErrorEmbed(channel, author);
 			}
 		}

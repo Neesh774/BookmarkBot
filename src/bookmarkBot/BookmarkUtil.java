@@ -1,5 +1,7 @@
 package bookmarkBot;
 
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -30,6 +32,26 @@ public class BookmarkUtil {
 		return bookmarks.get(owner.getIdLong());
 	}
 	public static void removeBookmark(User owner, int index) {
-		bookmarks.get(owner).remove(index);
+		bookmarks.get(owner.getIdLong()).remove(index);
+	}
+	public static boolean checkIfDupe(User owner, Bookmark bm) {
+		ArrayList<Bookmark> temp = getBookmarkList(owner);
+		for(Bookmark b : temp) {
+			if(b.getTitle().equals(bm.getTitle())) {
+				return true;
+			}
+		}
+		return false;
+	}
+	public static boolean checkIfURL(User owner, Bookmark bm) {
+	    try
+	    {
+	        URL url = new URL(bm.getURL());
+	        url.toURI();
+	        return true;
+	    } catch (Exception exception)
+	    {
+	        return false;
+	    }
 	}
 }
